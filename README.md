@@ -40,12 +40,8 @@ cd tests
 
 Change registration type
 ```
-export CODE=$(tvm_linker decode --tvc DnsRecord.tvc  | grep code: | cut -c 8-)
-export FREETON=$(echo -n "freeton" | xxd -p )
-export ORG=$(echo -n "org" | xxd -p )
-export KEYS_FILE="SuperSecretKeys.json"
-DNS_ADDRESS=$(tonos-cli genaddr --data '{"_dnsName":["'$ORG'","'$FREETON'"],"_code":"'$CODE'"}' DnsRecord.tvc DnsRecord.abi.json --setkey keys0.json --wc 0 --save | grep "Raw address:" | cut -c 14-)
-tonos-cli call $DNS_ADDRESS setRegistrationType '{"newType":"1"}' --sign $KEYS_FILE --abi DnsRecord.abi.json
+DNS_ADDRESS=$(./get_domain_address.sh org freeton)
+tonos-cli call $DNS_ADDRESS setRegistrationType '{"newType":"1"}' --sign keys1.json --abi ../contracts/DnsRecord.abi.json
 ```
 
 Check registration status:
