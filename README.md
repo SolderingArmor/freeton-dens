@@ -24,7 +24,7 @@ There is no perfect solution, but we tend to believe that this one is easy and f
 
 WARNING: repository contains key files, use them only locally (i.e. TON OS SE) and only for testing, because thay are not SECURE!
 
-Resolve an address freeton/org:
+Resolve an address org/freeton:
 ```
 cd tests
 ./get_domain_address.sh org freeton
