@@ -1,4 +1,4 @@
-pragma ton-solidity >= 0.35.0;
+pragma ton-solidity >= 0.38.0;
 pragma AbiHeader time;
 pragma AbiHeader pubkey;
 pragma AbiHeader expire;
@@ -12,7 +12,8 @@ import "DnsRecord.sol";
 contract DnsDeployer 
 {
     TvmCell public static _code;
-    uint256 _callerPubKey;
+    bytes[] public static _dnsName;
+    uint256 public        _callerPubKey;
 
     //========================================
     //
@@ -30,32 +31,28 @@ contract DnsDeployer
         return (address(tvm.hash(stateInit)), stateInit);
     }
 
-    function getDomainAddress(bytes[] name) external view returns (address)
-    {
-        (address addr, ) = calculateFutureAddress(name);
-        return addr;
-    }
-
     function destroy(address dest) external
     {
         require(_callerPubKey == msg.pubkey(), DNS.ERROR_MESSAGE_SENDER_IS_NOT_MY_OWNER);
+
         tvm.accept();
         selfdestruct(dest);
     }
 
     //========================================
     //
-    constructor(bytes[] name, address ownerAddress, uint256 ownerPubKey, REG_TYPE regType) public 
+    constructor(address ownerAddress, uint256 ownerPubKey, REG_TYPE regType) public 
     {
-        require(name.length >= 1,       DNS.ERROR_DNS_NAME_EMPTY           );
+        require(_dnsName.length >= 1,   DNS.ERROR_DNS_NAME_EMPTY           );
+        require(_dnsName.length <= 4,   DNS.ERROR_TOO_MANY_SUBDOMAINS      );
         require(regType < REG_TYPE.NUM, DNS.ERROR_INVALID_REGISTRATION_TYPE);
 
         tvm.accept(); // need this because checkDnsNameValidity() is expensive
         _callerPubKey = msg.pubkey();
-        require(DNS.checkDnsNameValidity(name) == true, DNS.ERROR_DNS_NAME_WRONG_NAME);
-        
-        (address addr, TvmCell stateInit) = calculateFutureAddress(name);
-        address newAddress = new DnsRecord{stateInit: stateInit, value: 1 ton}(ownerAddress, ownerPubKey, regType);
+        require(DNS.checkDnsNameValidity(_dnsName) == true, DNS.ERROR_DNS_NAME_WRONG_NAME);
+        tvm.accept(); // reset gas value
+        (address addr, TvmCell stateInit) = calculateFutureAddress(_dnsName);
+        address newAddress = new DnsRecord{stateInit: stateInit, value: address(this).balance / 2, flag: 0}(ownerAddress, ownerPubKey, regType);
     }
 }
 
