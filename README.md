@@ -8,10 +8,10 @@ No more copying and pasting long addresses. Use DeNS names to store all your add
 * Offline address resolving; No need to rely on factories or other contracts;
 * Decentralized deployment; although the contract needs to be deployed only by another contract (deployment by external message forcefully inserts deployer keys and alters the final address) we provide you with a special deployment contract, which can be then selfdestructed (and remaining TONs withdrawn);
 * No auctions; auctions allow rich people monitor new requests and buy all good-looking domains, a poor person who came with a good idea first won't be able to benefit from it;
-* Previous item leads us to the domain acquisituon procedure: first come - first serve;
+* Previous item leads us to the domain acquisition procedure: first come - first serve;
 * Transfer of ownership: at any time you can give yur domain to any other person (address or public key);
 * Custom subdomain registration policy; domain owner can setup the rules for sub-domain registration (when his domain is a parent domain), which include:
-* Free and instant activation;
+    * Free and instant activation;
     * Manual approval by parent domain;
     * Automatic approval after certain amount of TONs was transfered to a parent domain (tunable parameter);
     * Only the owner of parent domain can create sub-domains;
@@ -27,7 +27,12 @@ No more copying and pasting long addresses. Use DeNS names to store all your add
 ## How is it different?
 
 If you read "Key DeNS features" you might think "what the hell is that and how is it even close to DeNS contest proposal?".
-Well...
+This submission didn't go according to a plan; this submission is a custom vision of Decentralized Name Service (DeNS), how it can be made and (maybe) how it should be made.
+Traditional DNS registration procedure, as well as selling/transferring and prolongating domains feels more fair, more open and easier to understand. Blockchain technologies are modern and fast, that's why we think that expiration period of 90 days also looks fair. And again, no one takes your domain from you while you are prolongating it. If you stop taking care of your domain, it will go to the person that will, that also feels fair.
+
+In traditional DNS registration system all free domains are equal in value until purchased. Auction-based purchase not only moves "buy date" somewhere to the future, but also allows sharks of business and sharks of thick wallets to bet more on most domains (you can even set a very high bet, because you will need to pay second biggest price). Average Joe can spend months trying to register a domain, that experience is frustrating and not healthy.
+
+This DeNS implementation has more linear structure than tree structure: you don't need to rely on root domains to calculate any address, because calculation rules are the same for all domains.
 
 ## Usage
 
@@ -63,6 +68,12 @@ cd tests
 If _lastRegResult != 2 (APPROVED), you need to take action to fix that.
 See **IDnsRecord.sol:22** for details.
 
+**Send sub-domain registration request**
+```
+DNS_ADDRESS=$(./get_domain_address.sh org freeton)
+tonos-cli call $DNS_ADDRESS sendRegistrationRequest '{"tonsToInclude":"0"}' --sign keys1.json --abi ../contracts/DnsRecord.abi.json
+```
+
 **Change endpoint address:**
 ```
 DNS_ADDRESS=$(./get_domain_address.sh org freeton)
@@ -81,10 +92,9 @@ DNS_ADDRESS=$(./get_domain_address.sh org freeton)
 tonos-cli call $DNS_ADDRESS changeOwnership '{"newOwnerAddress":"0:0000000000000000000000000000000000000000000000000000000000000001", "newOwnerPubKey": "0x0000000000000000000000000000000000000000000000000000000000000000"}' --sign keys1.json --abi ../contracts/DnsRecord.abi.json
 ```
 
-
 ## Usage
 
-Now, when you understand how DnsRecord functions are called, let's see a typical use-cases. For reading simplicity and space preservance only function names will be written.
+Now, when you understand how DnsRecord functions are called, let's see a typical use-cases. For reading simplicity and space preservance only function()/_getter names will be written.
 
 ### Registering a top-level domain
 1. Deploy a top-level domain;
