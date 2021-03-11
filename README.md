@@ -112,7 +112,7 @@ Now, when you understand how DnsRecord functions are called, let's see a typical
 4. If you are lucky, your ***_lastRegResult*** will be 2 (APPROVED);
 5. Do items 2-7 from "Registering a top-level domain" list, it's basically the same;
 
-### Claiming an expired dDnsRecord
+### Claiming an expired DnsRecord
 1. Check ***isExpired()*** of the desired DnsRecord  every now and then;
 2. If you get "true" as a result, claim it! ***claimExpired()***;
 3. After you claim it, you will have 10 days to complete the registration, otherwise DnsRecord will expire: ***sendRegistrationRequest()***; NOTE: if you are claiming root DnsRecord, it is APPROVED right away;
