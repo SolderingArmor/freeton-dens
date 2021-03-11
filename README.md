@@ -4,6 +4,7 @@ No more copying and pasting long addresses. Use DeNS names to store all your add
 
 ## Key DeNS features:
 
+* SIMPLICITY! Only one contract (we don't take deployer into account) to manage ALL DeNS behavior;
 * 4 levels of sub-domains, 63 symbols per zone (lowercase letters and numbers) with maximum domain length of 252 symbols;
 * Offline address resolving; No need to rely on factories or other contracts;
 * Decentralized deployment; although the contract needs to be deployed only by another contract (deployment by external message forcefully inserts deployer keys and alters the final address) we provide you with a special deployment contract, which can be then selfdestructed (and remaining TONs withdrawn);
