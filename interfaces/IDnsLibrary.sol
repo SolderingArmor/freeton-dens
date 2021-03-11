@@ -10,16 +10,17 @@ library DNS
     //========================================
     // Error codes
     uint constant ERROR_MESSAGE_SENDER_IS_NOT_MY_OWNER = 100;
-    uint constant ERROR_EITHER_ADDRESS_OR_PUBKEY       = 101;
-    uint constant ERROR_REGISTRATION_INCOMPLETE        = 102;
+    uint constant ERROR_MESSAGE_SENDER_IS_NOT_MY_ROOT  = 101;
+    uint constant ERROR_EITHER_ADDRESS_OR_PUBKEY       = 102;
+    uint constant ERROR_REGISTRATION_INCOMPLETE        = 103;
     uint constant ERROR_DNS_WRONG_TYPE                 = 201;
     uint constant ERROR_DNS_NAME_EMPTY                 = 202;
-    uint constant ERROR_DNS_NAME_WRONG_NAME            = 203;
+    uint constant ERROR_WRONG_DNS_NAME                 = 203;
     uint constant ERROR_DNS_NAME_TOO_LONG              = 204;
     uint constant ERROR_TOO_MANY_SUBDOMAINS            = 205;
-    uint constant ERROR_DOMAIN_EXPIRED                 = 206;
-    uint constant ERROR_DOMAIN_DENIED                  = 207;
-    uint constant ERROR_DOMAIN_IS_NOT_EXPIRED          = 208;
+    uint constant ERROR_DOMAIN_DENIED                  = 206;
+    uint constant ERROR_DOMAIN_EXPIRED                 = 207;
+    uint constant ERROR_DOMAIN_NOT_EXPIRED             = 208;
     uint constant ERROR_TOO_EARLY_TO_PROLONGATE        = 209;
     uint constant ERROR_INVALID_REGISTRATION_TYPE      = 210;
     uint constant ERROR_NOT_ENOUGH_MONEY               = 211;

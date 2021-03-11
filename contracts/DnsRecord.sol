@@ -20,7 +20,7 @@ contract DnsRecord is IDnsRecord
     // Constants
     address constant addressZero = address.makeAddrStd(0, 0); //
     uint32  constant tenDays     = 60 * 60 * 24 * 10;         // 10 days in seconds
-    uint32  constant sixtyDays   = tenDays * 6;               // 60 days in seconds
+    uint32  constant ninetyDays  = tenDays * 9;               // 90 days in seconds
 
     // Mappings
     //
@@ -49,6 +49,12 @@ contract DnsRecord is IDnsRecord
         _;
     }
 
+    modifier notExpired 
+    {
+        require(!isExpired(), DNS.ERROR_DOMAIN_EXPIRED);
+        _;
+    }
+
     //========================================
     //
     constructor(address ownerAddress, uint256 ownerPubKey, REG_TYPE regType) public 
@@ -58,7 +64,7 @@ contract DnsRecord is IDnsRecord
         require(regType < REG_TYPE.NUM, DNS.ERROR_INVALID_REGISTRATION_TYPE);
 
         tvm.accept(); // need this because checkDnsNameValidity() is expensive
-        require(DNS.checkDnsNameValidity(_dnsName) == true, DNS.ERROR_DNS_NAME_WRONG_NAME);
+        require(DNS.checkDnsNameValidity(_dnsName) == true, DNS.ERROR_WRONG_DNS_NAME);
         
         // Reset the gas
         tvm.accept(); 
@@ -68,51 +74,45 @@ contract DnsRecord is IDnsRecord
         _lastRegResult  = REG_RESULT.PENDING;
         _expirationDate = now + tenDays; // when claiming domain is taken for 10 days to wait for registration to be completed;
         
-        if(_dnsName.length == 1) // if it is a ROOT domain name
+        // if it is a ROOT domain name
+        if(_dnsName.length == 1) 
         {
-            // Root domains won't need approval, callback right away
-            callback_RegistrationRequest(REG_RESULT.APPROVED);
+            // Root domains won't need approval, internal callback right away
+            _callback_RegistrationRequest(REG_RESULT.APPROVED);
         }
-        else
-        {
-            // Send initial registration request            
-            sendRegistrationRequest(0); // automatic registration request is with 0 additional TONs
-        }
+        // else{}
+        // For 2+ level subdomains you need to call "sendRegistrationRequest()" manually 
+        // (because you need to know registration terms of the parent Record fist, not to waste money);
     }
 
     //========================================
     //
     function getEndpointAddress() external override returns (address)
     {
-        _checkExpired();
-
         return _endpointAddress;
     }
 
     //========================================
     //
-    function changeEndpointAddress(address newAddress) external override onlyOwner
+    function changeEndpointAddress(address newAddress) external override onlyOwner notExpired
     {
-        _checkExpired();
-        
         tvm.accept();
         _endpointAddress = newAddress;
     }
 
     //========================================
     //
-    function changeOwnership(address newOwnerAddress, uint256 newOwnerPubKey) external override onlyOwner
+    function changeOwnership(address newOwnerAddress, uint256 newOwnerPubKey) external override onlyOwner notExpired
     {
-        _checkExpired();
-
         bool byPubKey  = (newOwnerPubKey != 0 && newOwnerAddress == addressZero);
         bool byAddress = (newOwnerPubKey == 0 && newOwnerAddress != addressZero);
 
         require(byPubKey || byAddress, DNS.ERROR_EITHER_ADDRESS_OR_PUBKEY);
         
         tvm.accept();
-        _ownerPubKey  = newOwnerPubKey;
-        _ownerAddress = newOwnerAddress;
+        _ownerPubKey     = newOwnerPubKey;
+        _ownerAddress    = newOwnerAddress;
+        _endpointAddress = addressZero;
     }
 
     //========================================
@@ -122,23 +122,7 @@ contract DnsRecord is IDnsRecord
     ///      The fix is coming: https://github.com/tonlabs/TON-Solidity-Compiler/issues/36
     function isExpired() public override returns (bool)
     {
-        return (_lastRegResult == REG_RESULT.EXPIRED || now > _expirationDate);
-    }
-
-    function _checkExpired() private inline
-    {
-        if(isExpired())
-        {
-            tvm.accept();
-            _ownerAddress      = addressZero;
-            _ownerPubKey       = 0;
-            _subdomainRegPrice = 0;
-            _regType           = REG_TYPE.DENY;
-            _lastRegResult     = REG_RESULT.EXPIRED;
-
-            // Throw
-            require(false, DNS.ERROR_DOMAIN_EXPIRED);
-        }
+        return (now > _expirationDate);
     }
 
     //========================================
@@ -146,9 +130,9 @@ contract DnsRecord is IDnsRecord
     /// @dev TODO: here "external" was purposely changed to "public", otherwise you get the following error:
     ///      Error: Undeclared identifier. "claimExpired" is not (or not yet) visible at this point.
     ///      The fix is coming: https://github.com/tonlabs/TON-Solidity-Compiler/issues/36
-    function claimExpired(address newOwnerAddress, uint256 newOwnerPubKey) public override
+    function claimExpired(address newOwnerAddress, uint256 newOwnerPubKey, REG_TYPE regType) public override
     {
-        require(isExpired() || _lastRegResult == REG_RESULT.DENIED, DNS.ERROR_DOMAIN_IS_NOT_EXPIRED);
+        require(isExpired() || _lastRegResult == REG_RESULT.DENIED, DNS.ERROR_DOMAIN_NOT_EXPIRED);
 
         tvm.accept();
 
@@ -157,22 +141,28 @@ contract DnsRecord is IDnsRecord
         _lastRegResult  = REG_RESULT.PENDING;
         _ownerAddress   = newOwnerAddress;
         _ownerPubKey    = newOwnerPubKey;
+        _regType        = regType;
         _expirationDate = now + tenDays; // when claiming domain is taken for 10 days to wait for registration to be completed;
         
-        sendRegistrationRequest(0); // automatic registration request is with 0 additional TONs
+        // if it is a ROOT domain name
+        if(_dnsName.length == 1) 
+        {
+            // Root domains won't need approval, internal callback right away
+            _callback_RegistrationRequest(REG_RESULT.APPROVED);
+        }
     }
 
     //========================================
     //
-    function prolongate() external override onlyOwner
+    function prolongate() external override onlyOwner notExpired
     {
-        _checkExpired();
+        //_checkExpired();
         
         tvm.accept();
         //
         if(now <= _expirationDate && now >= _expirationDate - tenDays)
         {
-            _expirationDate += sixtyDays;
+            _expirationDate += ninetyDays;
             return;
         }
 
@@ -182,10 +172,10 @@ contract DnsRecord is IDnsRecord
 
     //========================================
     //
-    function setRegistrationType(REG_TYPE newType) external override onlyOwner
+    function setRegistrationType(REG_TYPE newType) external override onlyOwner notExpired
     {
         require(newType < REG_TYPE.NUM, DNS.ERROR_INVALID_REGISTRATION_TYPE);
-        _checkExpired();
+        //_checkExpired();
         
         tvm.accept();
         _regType = newType;
@@ -240,8 +230,8 @@ contract DnsRecord is IDnsRecord
     ///      The fix is coming: https://github.com/tonlabs/TON-Solidity-Compiler/issues/36
     function sendRegistrationRequest(uint128 tonsToInclude) public override
     {
-        require(_dnsName.length > 1,                                                                   DNS.ERROR_DNS_NAME_WRONG_NAME  );
-        require(_lastRegResult == REG_RESULT.NOT_ENOUGH_MONEY || _lastRegResult == REG_RESULT.PENDING, DNS.ERROR_DOMAIN_DENIED        );
+        require(_dnsName.length > 1,                                                                   DNS.ERROR_WRONG_DNS_NAME);
+        require(_lastRegResult == REG_RESULT.NOT_ENOUGH_MONEY || _lastRegResult == REG_RESULT.PENDING, DNS.ERROR_DOMAIN_DENIED );
 
         tvm.accept();
         uint128 tonsWithGas = tonsToInclude + 0.2 ton;
@@ -255,7 +245,7 @@ contract DnsRecord is IDnsRecord
     //
     function receiveRegistrationRequest(bytes[] name, address ownerAddress, uint256 ownerPubKey) external responsible override returns (REG_RESULT)
     {
-        require(msg.pubkey() == 0, DNS.ERROR_EXTERNAL_CALLER);
+        require(msg.pubkey() == 0, DNS.ERROR_EXTERNAL_CALLER );
         require(msg.value     > 0, DNS.ERROR_NOT_ENOUGH_MONEY);
         tvm.accept();
 
@@ -265,6 +255,7 @@ contract DnsRecord is IDnsRecord
         else if(_regType == REG_TYPE.REQUEST)
         {
             // TODO: do not duplicate if the same domain requested registration 2+ times
+            //       spammers gonna spam;
             _domainRegistrationRequests.push(name);
 
             emit registrationRequested(now, name);
@@ -273,6 +264,11 @@ contract DnsRecord is IDnsRecord
         else if(_regType == REG_TYPE.MONEY)
         {
             result = (msg.value >= _subdomainRegPrice ? REG_RESULT.APPROVED : REG_RESULT.NOT_ENOUGH_MONEY);
+            if(result == REG_RESULT.NOT_ENOUGH_MONEY)
+            {
+                // Registration failed, return the change
+                return{value: 0, flag: 64}(result);
+            }
         }
         else if(_regType == REG_TYPE.OWNER)
         {
@@ -290,13 +286,25 @@ contract DnsRecord is IDnsRecord
     ///      The fix is coming: https://github.com/tonlabs/TON-Solidity-Compiler/issues/36
     function callback_RegistrationRequest(REG_RESULT result) public override 
     {
+        require(_dnsName.length > 1, DNS.ERROR_WRONG_DNS_NAME);
+        tvm.accept();
+        
+        bytes[] parentName = _getParentName(_dnsName);
+        (address parent, ) = calculateFutureAddress(parentName);
+        require(msg.sender == parent, DNS.ERROR_MESSAGE_SENDER_IS_NOT_MY_ROOT);
+        
+        _callback_RegistrationRequest(result);
+    }
+
+    function _callback_RegistrationRequest(REG_RESULT result) internal
+    {
         tvm.accept();
         
         _lastRegResult = result;
         
         if(result == REG_RESULT.APPROVED)
         {
-            _expirationDate = now + sixtyDays;
+            _expirationDate = now + ninetyDays;
         }
         else if(result == REG_RESULT.PENDING)
         {
@@ -314,11 +322,12 @@ contract DnsRecord is IDnsRecord
         }
     }
 
+
     //========================================
     //
-    function approveRegistration(bytes[] name) external override onlyOwner
+    function approveRegistration(bytes[] name) external override onlyOwner notExpired
     {
-        _checkExpired();
+        //_checkExpired();
                 
         tvm.accept();
 
@@ -337,9 +346,9 @@ contract DnsRecord is IDnsRecord
 
     //========================================
     //
-    function approveRegistrationAll() external override onlyOwner
+    function approveRegistrationAll() external override onlyOwner notExpired
     {
-        _checkExpired();
+        //_checkExpired();
                 
         tvm.accept();
 
@@ -353,9 +362,9 @@ contract DnsRecord is IDnsRecord
     
     //========================================
     //
-    function denyRegistration(bytes[] name) external override onlyOwner
+    function denyRegistration(bytes[] name) external override onlyOwner notExpired
     {
-        _checkExpired();
+        //_checkExpired();
         
         tvm.accept();
 
@@ -374,9 +383,9 @@ contract DnsRecord is IDnsRecord
     
     //========================================
     //
-    function denyRegistrationAll() external override onlyOwner
+    function denyRegistrationAll() external override onlyOwner notExpired
     {
-        _checkExpired();
+        //_checkExpired();
         
         tvm.accept();
         
@@ -390,9 +399,9 @@ contract DnsRecord is IDnsRecord
 
     //========================================
     //
-    function setSubdomainRegPrice(uint128 price) external override onlyOwner
+    function setSubdomainRegPrice(uint128 price) external override onlyOwner notExpired
     {
-        _checkExpired();
+        //_checkExpired();
         
         tvm.accept();
 
@@ -401,9 +410,9 @@ contract DnsRecord is IDnsRecord
 
     //========================================
     //
-    function withdrawBalance(uint128 amount, address dest) external override onlyOwner
+    function withdrawBalance(uint128 amount, address dest) external override onlyOwner notExpired
     {
-        _checkExpired();
+        //_checkExpired();
         
         tvm.accept();
 

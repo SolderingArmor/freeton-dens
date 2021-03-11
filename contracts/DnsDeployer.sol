@@ -49,10 +49,11 @@ contract DnsDeployer
 
         tvm.accept(); // need this because checkDnsNameValidity() is expensive
         _callerPubKey = msg.pubkey();
-        require(DNS.checkDnsNameValidity(_dnsName) == true, DNS.ERROR_DNS_NAME_WRONG_NAME);
+        require(DNS.checkDnsNameValidity(_dnsName) == true, DNS.ERROR_WRONG_DNS_NAME);
         tvm.accept(); // reset gas value
         (address addr, TvmCell stateInit) = calculateFutureAddress(_dnsName);
-        address newAddress = new DnsRecord{stateInit: stateInit, value: address(this).balance / 2, flag: 0}(ownerAddress, ownerPubKey, regType);
+        //address newAddress = new DnsRecord{stateInit: stateInit, value: address(this).balance / 2, flag: 0}(ownerAddress, ownerPubKey, regType);
+        address newAddress = new DnsRecord{stateInit: stateInit, value: address(this).balance - 0.2 ton, flag: 0}(ownerAddress, ownerPubKey, regType);
     }
 }
 

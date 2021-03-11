@@ -1,0 +1,263 @@
+{
+	"ABI version": 2,
+	"header": ["pubkey", "time", "expire"],
+	"functions": [
+		{
+			"name": "constructor",
+			"inputs": [
+				{"name":"ownerAddress","type":"address"},
+				{"name":"ownerPubKey","type":"uint256"},
+				{"name":"regType","type":"uint8"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "getEndpointAddress",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "changeEndpointAddress",
+			"inputs": [
+				{"name":"newAddress","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "changeOwnership",
+			"inputs": [
+				{"name":"newOwnerAddress","type":"address"},
+				{"name":"newOwnerPubKey","type":"uint256"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "isExpired",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"value0","type":"bool"}
+			]
+		},
+		{
+			"name": "claimExpired",
+			"inputs": [
+				{"name":"newOwnerAddress","type":"address"},
+				{"name":"newOwnerPubKey","type":"uint256"},
+				{"name":"regType","type":"uint8"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "prolongate",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setRegistrationType",
+			"inputs": [
+				{"name":"newType","type":"uint8"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "calculateDomainAddress",
+			"inputs": [
+				{"name":"name","type":"bytes[]"}
+			],
+			"outputs": [
+				{"name":"value0","type":"address"}
+			]
+		},
+		{
+			"name": "sendRegistrationRequest",
+			"inputs": [
+				{"name":"tonsToInclude","type":"uint128"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "receiveRegistrationRequest",
+			"inputs": [
+				{"name":"_answer_id","type":"uint32"},
+				{"name":"name","type":"bytes[]"},
+				{"name":"ownerAddress","type":"address"},
+				{"name":"ownerPubKey","type":"uint256"}
+			],
+			"outputs": [
+				{"name":"value0","type":"uint8"}
+			]
+		},
+		{
+			"name": "callback_RegistrationRequest",
+			"inputs": [
+				{"name":"result","type":"uint8"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "approveRegistration",
+			"inputs": [
+				{"name":"name","type":"bytes[]"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "approveRegistrationAll",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "denyRegistration",
+			"inputs": [
+				{"name":"name","type":"bytes[]"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "denyRegistrationAll",
+			"inputs": [
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "setSubdomainRegPrice",
+			"inputs": [
+				{"name":"price","type":"uint128"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "withdrawBalance",
+			"inputs": [
+				{"name":"amount","type":"uint128"},
+				{"name":"dest","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "_domainRegistrationRequests",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_domainRegistrationRequests","type":"bytes[][]"}
+			]
+		},
+		{
+			"name": "_ownerPubKey",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_ownerPubKey","type":"uint256"}
+			]
+		},
+		{
+			"name": "_ownerAddress",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_ownerAddress","type":"address"}
+			]
+		},
+		{
+			"name": "_regType",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_regType","type":"uint8"}
+			]
+		},
+		{
+			"name": "_dnsName",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_dnsName","type":"bytes[]"}
+			]
+		},
+		{
+			"name": "_code",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_code","type":"cell"}
+			]
+		},
+		{
+			"name": "_endpointAddress",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_endpointAddress","type":"address"}
+			]
+		},
+		{
+			"name": "_expirationDate",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_expirationDate","type":"uint32"}
+			]
+		},
+		{
+			"name": "_lastRegResult",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_lastRegResult","type":"uint8"}
+			]
+		},
+		{
+			"name": "_subdomainRegPrice",
+			"inputs": [
+			],
+			"outputs": [
+				{"name":"_subdomainRegPrice","type":"uint128"}
+			]
+		}
+	],
+	"data": [
+		{"key":1,"name":"_dnsName","type":"bytes[]"},
+		{"key":2,"name":"_code","type":"cell"}
+	],
+	"events": [
+		{
+			"name": "ownerChanged",
+			"inputs": [
+				{"name":"dt","type":"uint256"},
+				{"name":"oldOwner","type":"address"},
+				{"name":"newOwner","type":"address"}
+			],
+			"outputs": [
+			]
+		},
+		{
+			"name": "registrationRequested",
+			"inputs": [
+				{"name":"dt","type":"uint256"},
+				{"name":"name","type":"bytes[]"}
+			],
+			"outputs": [
+			]
+		}
+	]
+}

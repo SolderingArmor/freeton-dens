@@ -21,12 +21,11 @@ enum REG_TYPE
 
 enum REG_RESULT
 {
-    NONE,     // this
-    PENDING,  // is
-    APPROVED, // self
-    DENIED,   // explanatory
-    NOT_ENOUGH_MONEY,
-    EXPIRED,
+    NONE,             // 
+    PENDING,          // Either root domain needs to manually approve the registration, or root domain doesn't exist; did you check that?
+    APPROVED,         // Cool;
+    DENIED,           // Root domain denies the registration (either automatically or manually), try again later;
+    NOT_ENOUGH_MONEY, // Root domain requires more money to send;
     NUM
 }
 
@@ -85,8 +84,9 @@ interface IDnsRecord
     ///
     /// @param newOwnerAddress - address of a new owner; can be 0;
     /// @param newOwnerPubKey  - pubkey  of a new owner; can be (0, 0);
+    /// @param regType         - new registration type;
     //
-    function claimExpired(address newOwnerAddress, uint256 newOwnerPubKey) external;
+    function claimExpired(address newOwnerAddress, uint256 newOwnerPubKey, REG_TYPE regType) external;
     
     /// @notice Send a registration request to a parent DomainRecord;
     ///         Can be called however times needed;
