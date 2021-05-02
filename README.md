@@ -1,3 +1,8 @@
+# ! IMPORTANT !
+This repo is kept only as history, development is continued in the following repo: https://github.com/laugual/dens-v2
+
+Original idea and architecture are preserved, but a lot of new perks and features are added.
+
 # FreeTON DeNS
 
 No more copying and pasting long addresses. Use DeNS names to store all your addresses in a human-readable way!
